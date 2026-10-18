@@ -3,12 +3,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+const vehicleRoutes = require('./routes/vehicleRoutes');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Vehicle telemetry API
+app.use('/api/vehicles', vehicleRoutes);
 
 // Health-check API
 app.get('/api/health', (req, res) => {
