@@ -3,7 +3,7 @@ const express = require('express');
 
 const router = express.Router();
 
-// Temporary vehicle telemetry data
+// Initial vehicle telemetry data
 const vehicles = [
   {
     id: 'VH-001',
@@ -40,11 +40,64 @@ const vehicles = [
   }
 ];
 
+// Generate a small random change
+function randomChange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// Simulate updated telemetry every 3 seconds
+setInterval(() => {
+  vehicles.forEach((vehicle) => {
+    // Update speed and movement status
+    if (Math.random() < 0.05) {
+      vehicle.status =
+        vehicle.status === 'Moving' ? 'Idle' : 'Moving';
+    }
+
+    if (vehicle.status === 'Moving') {
+      vehicle.speed = Math.max(
+        20,
+        Math.min(100, Math.round(
+          vehicle.speed + randomChange(-8, 8)
+        ))
+      );
+
+      // Simulate small location changes while moving
+      vehicle.latitude = Number(
+        (vehicle.latitude + randomChange(-0.0005, 0.0005)).toFixed(6)
+      );
+
+      vehicle.longitude = Number(
+        (vehicle.longitude + randomChange(-0.0005, 0.0005)).toFixed(6)
+      );
+    } else {
+      vehicle.speed = 0;
+    }
+
+    // Fuel decreases slowly while the vehicle is moving
+    if (vehicle.status === 'Moving' && vehicle.fuel > 0) {
+      vehicle.fuel = Number(
+        Math.max(0, vehicle.fuel - randomChange(0, 0.05)).toFixed(2)
+      );
+    }
+
+    // Simulate engine temperature changes
+    vehicle.temperature = Math.max(
+      65,
+      Math.min(
+        110,
+        Math.round(vehicle.temperature + randomChange(-2, 2))
+      )
+    );
+  });
+}, 3000);
+
 // GET all vehicles
 router.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     count: vehicles.length,
+    lastUpdated: new Date().toISOString(),
     data: vehicles
   });
 });

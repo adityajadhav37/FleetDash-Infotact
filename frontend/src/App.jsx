@@ -86,10 +86,11 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [apiError, setApiError] = useState('')
 
-  const fetchVehicles = useCallback(async () => {
+  const fetchVehicles = useCallback(async ({ showLoading = false } = {}) => {
     try {
-      setLoading(true)
-      setApiError('')
+      if (showLoading) {
+        setLoading(true)
+      }
 
       const response = await fetch(
         'http://localhost:5000/api/vehicles',
@@ -112,18 +113,34 @@ function App() {
       }))
 
       setVehicles(mappedVehicles)
-      setLastUpdated(new Date().toLocaleTimeString())
+      setLastUpdated(
+        result.lastUpdated
+          ? new Date(result.lastUpdated).toLocaleTimeString()
+          : new Date().toLocaleTimeString(),
+      )
+      setApiError('')
     } catch (error) {
       setApiError(
         error.message || 'Unable to connect to the backend',
       )
     } finally {
-      setLoading(false)
+      if (showLoading) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
-    fetchVehicles()
+    // Load the first set of vehicle data.
+    fetchVehicles({ showLoading: true })
+
+    // Refresh telemetry automatically every 3 seconds.
+    const intervalId = setInterval(() => {
+      fetchVehicles()
+    }, 3000)
+
+    // Stop polling when the dashboard is unmounted.
+    return () => clearInterval(intervalId)
   }, [fetchVehicles])
 
   const filteredVehicles = vehicles.filter((vehicle) => {
@@ -146,7 +163,7 @@ function App() {
   })
 
   function refreshDashboard() {
-    fetchVehicles()
+    fetchVehicles({ showLoading: true })
   }
 
   return (
