@@ -1,4 +1,5 @@
-// Initial vehicle telemetry data
+
+ // Initial vehicle telemetry data
 const vehicles = [
   {
     id: 'VH-001',
@@ -93,6 +94,14 @@ function getAllVehicles() {
   return vehicles;
 }
 
+// Find one vehicle by its ID
+function getVehicleById(id) {
+  return vehicles.find(
+    (vehicle) => vehicle.id.toLowerCase() === id.toLowerCase()
+  ) || null;
+}
+
 module.exports = {
-  getAllVehicles
+  getAllVehicles,
+  getVehicleById
 };
