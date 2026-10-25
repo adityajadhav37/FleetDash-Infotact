@@ -44,7 +44,6 @@ function randomChange(min, max) {
 // Simulate updated telemetry every 3 seconds
 setInterval(() => {
   vehicles.forEach((vehicle) => {
-    // Occasionally switch between Moving and Idle
     if (Math.random() < 0.05) {
       vehicle.status =
         vehicle.status === 'Moving' ? 'Idle' : 'Moving';
@@ -59,7 +58,6 @@ setInterval(() => {
         )
       );
 
-      // Simulate small location changes while moving
       vehicle.latitude = Number(
         (vehicle.latitude + randomChange(-0.0005, 0.0005)).toFixed(6)
       );
@@ -68,7 +66,6 @@ setInterval(() => {
         (vehicle.longitude + randomChange(-0.0005, 0.0005)).toFixed(6)
       );
 
-      // Fuel decreases slowly while moving
       if (vehicle.fuel > 0) {
         vehicle.fuel = Number(
           Math.max(0, vehicle.fuel - randomChange(0, 0.05)).toFixed(2)
@@ -78,7 +75,6 @@ setInterval(() => {
       vehicle.speed = 0;
     }
 
-    // Simulate engine temperature changes
     vehicle.temperature = Math.max(
       65,
       Math.min(
@@ -89,12 +85,19 @@ setInterval(() => {
   });
 }, 3000);
 
-// Return all current vehicle data
+// Return all current vehicles
 function getAllVehicles() {
   return vehicles;
 }
 
-// Find one vehicle by its ID
+// Filter vehicles by status
+function getVehiclesByStatus(status) {
+  return vehicles.filter(
+    (vehicle) => vehicle.status.toLowerCase() === status.toLowerCase()
+  );
+}
+
+// Find one vehicle by ID
 function getVehicleById(id) {
   return vehicles.find(
     (vehicle) => vehicle.id.toLowerCase() === id.toLowerCase()
@@ -103,5 +106,6 @@ function getVehicleById(id) {
 
 module.exports = {
   getAllVehicles,
+  getVehiclesByStatus,
   getVehicleById
 };
