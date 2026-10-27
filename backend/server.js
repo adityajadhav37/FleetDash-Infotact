@@ -24,6 +24,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Handle unknown API routes
+app.use('/api', (req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: `API route '${req.originalUrl}' was not found`
+  });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`FleetDash server running on http://localhost:${PORT}`);

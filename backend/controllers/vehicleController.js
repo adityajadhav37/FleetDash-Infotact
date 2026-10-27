@@ -3,10 +3,29 @@ const vehicleService = require('../services/vehicleService');
 
 // GET all vehicles or filter by status
 function getAllVehicles(req, res) {
+  const allowedQueryParams = ['status'];
+  const unexpectedParams = Object.keys(req.query).filter(
+    (key) => !allowedQueryParams.includes(key)
+  );
+
+  if (unexpectedParams.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: `Unsupported query parameter: ${unexpectedParams[0]}`
+    });
+  }
+
   const { status } = req.query;
   let vehicles;
 
   if (status !== undefined) {
+    if (typeof status !== 'string' || !status.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status must be Moving or Idle.'
+      });
+    }
+
     const normalizedStatus = status.trim().toLowerCase();
 
     if (!['moving', 'idle'].includes(normalizedStatus)) {
@@ -31,12 +50,21 @@ function getAllVehicles(req, res) {
 
 // GET one vehicle by ID
 function getVehicleById(req, res) {
-  const vehicle = vehicleService.getVehicleById(req.params.id);
+  const id = req.params.id;
+
+  if (!/^VH-\d{3}$/i.test(id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid vehicle ID format. Use an ID such as VH-001.'
+    });
+  }
+
+  const vehicle = vehicleService.getVehicleById(id);
 
   if (!vehicle) {
     return res.status(404).json({
       success: false,
-      message: `Vehicle with ID '${req.params.id}' was not found`
+      message: `Vehicle with ID '${id}' was not found`
     });
   }
 
