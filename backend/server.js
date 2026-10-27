@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const vehicleRoutes = require('./routes/vehicleRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,9 @@ app.use('/api', (req, res) => {
     message: `API route '${req.originalUrl}' was not found`
   });
 });
+
+// Centralized error-handling middleware
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
