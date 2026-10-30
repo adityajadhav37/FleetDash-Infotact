@@ -28,6 +28,7 @@ import {
 } from 'recharts'
 
 import { useCallback, useEffect, useState } from 'react'
+import { io } from 'socket.io-client'
 import './App.css'
 
 const telemetry = [
@@ -130,18 +131,38 @@ function App() {
     }
   }, [])
 
-  useEffect(() => {
-    // Load the first set of vehicle data.
-    fetchVehicles({ showLoading: true })
-
-    // Refresh telemetry automatically every 3 seconds.
-    const intervalId = setInterval(() => {
-      fetchVehicles()
-    }, 3000)
-
-    // Stop polling when the dashboard is unmounted.
-    return () => clearInterval(intervalId)
-  }, [fetchVehicles])
+ useEffect(() => {
+  // Connect to the Socket.IO backend.
+  const socket = io('http://localhost:5000')
+  // Handle successful connection.
+  socket.on('connect', () => {
+    console.log('Connected to FleetDash real-time server')
+  })
+  // Receive live vehicle telemetry updates.
+  socket.on('vehicles:update', (result) => {
+    if (!result.success || !Array.isArray(result.data)) {
+      return
+    }
+    const mappedVehicles = result.data.map((vehicle, index) => ({
+      ...vehicle,
+      route: `${vehicle.latitude}, ${vehicle.longitude}`,
+      color: vehicleColors[index % vehicleColors.length],
+    }))
+    setVehicles(mappedVehicles)
+    setLastUpdated(
+      new Date(result.lastUpdated).toLocaleTimeString(),
+    )
+    setApiError('')
+  })
+  // Handle connection errors.
+  socket.on('connect_error', () => {
+    setApiError('Unable to connect to real-time telemetry')
+  })
+  // Disconnect when the dashboard is unmounted.
+  return () => {
+    socket.disconnect()
+  }
+}, [])
 
   const filteredVehicles = vehicles.filter((vehicle) => {
     const matchesSearch = [

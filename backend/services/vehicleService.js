@@ -36,6 +36,14 @@ const vehicles = [
   }
 ];
 
+// Callback for real-time telemetry updates
+let telemetryUpdateHandler = null;
+
+// Register the telemetry update callback
+function setTelemetryUpdateHandler(handler) {
+  telemetryUpdateHandler = handler;
+}
+
 // Generate a small random change
 function randomChange(min, max) {
   return Math.random() * (max - min) + min;
@@ -83,6 +91,13 @@ setInterval(() => {
       )
     );
   });
+
+  // Notify the server after every telemetry update
+  if (telemetryUpdateHandler) {
+    telemetryUpdateHandler(
+      vehicles.map((vehicle) => ({ ...vehicle }))
+    );
+  }
 }, 3000);
 
 // Return all current vehicles
@@ -107,5 +122,6 @@ function getVehicleById(id) {
 module.exports = {
   getAllVehicles,
   getVehiclesByStatus,
-  getVehicleById
+  getVehicleById,
+  setTelemetryUpdateHandler
 };
